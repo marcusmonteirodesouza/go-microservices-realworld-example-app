@@ -3,4 +3,6 @@ locals {
   region                   = "us-central1"
   subnetwork_ip_cidr_range = "10.128.0.0/20"
   firestore_location_id    = "us-central"
+  api_id                   = "realworld-example-app"
+  api_description          = "RealWorld Example App API"
 }

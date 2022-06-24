@@ -33,3 +33,11 @@ module "users_service" {
     module.firestore
   ]
 }
+
+module "api_gateway" {
+  source = "./modules/api_gateway"
+
+  api_id          = local.api_id
+  api_description = local.api_description
+  users_service_url = module.users_service.url
+}
