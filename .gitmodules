@@ -1,0 +1,3 @@
+[submodule "go-microservices-realworld-example-app-users-service"]
+	path = go-microservices-realworld-example-app-users-service
+	url = https://github.com/marcusmonteirodesouza/go-microservices-realworld-example-app-users-service.git
