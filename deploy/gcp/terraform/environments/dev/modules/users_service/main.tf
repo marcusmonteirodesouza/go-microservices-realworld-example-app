@@ -19,24 +19,16 @@ resource "google_artifact_registry_repository" "users_service" {
   ]
 }
 
-resource "google_project_service" "cloudbuild" {
-  service            = "cloudbuild.googleapis.com"
-  disable_on_destroy = false
-}
+resource "docker_registry_image" "users_service" {
+  name = local.image
 
-resource "null_resource" "build_and_push_container_image" {
-  provisioner "local-exec" {
-    command     = "./build-and-push-container-image.sh '${var.project_id}' '${var.region}' '${local.image}'"
-    working_dir = "${path.module}/scripts"
+  build {
+    context = abspath("${path.module}/../../../../../../../go-microservices-realworld-example-app-users-service")
   }
-
-  depends_on = [
-    google_project_service.cloudbuild
-  ]
 }
 
 resource "random_password" "users_service_jwt_secret_key" {
-  length = 16
+  length = 64
 }
 
 resource "google_project_service" "secret_manager" {
@@ -80,7 +72,7 @@ resource "google_cloud_run_service" "users_service" {
   template {
     spec {
       containers {
-        image = local.image
+        image = "${local.image}@${docker_registry_image.users_service.sha256_digest}"
         env {
           name  = "FIRESTORE_PROJECT_ID"
           value = var.project_id
@@ -104,6 +96,6 @@ resource "google_cloud_run_service" "users_service" {
 
   depends_on = [
     google_project_service.cloudrun,
-    google_secret_manager_secret_iam_member.secret_access
+    google_secret_manager_secret_iam_member.secret_access,
   ]
 }

@@ -10,6 +10,43 @@ schemes:
   - https
 produces:
   - application/json
+definitions:
+  User:
+    type: object
+    properties:
+      user: 
+        type: object
+        required:
+          - email
+          - token
+          - username
+          - bio
+          - image
+        properties:
+          email:
+            type: string
+          token:
+            type: string
+          username:
+            type: string
+          bio:
+            type: string
+          image:
+            type: string
+  ErrorResponse:
+    required:
+      - errors
+    type: object
+    properties:
+      errors:
+        required:
+          - body
+        type: object
+        properties:
+          body:
+            type: array
+            items:
+              type: string
 paths:
   /users/login:
     post:
@@ -78,46 +115,27 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/User'
+        401:
+          description: Unauthorized
         422:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorResponse'
-definitions:
-  User:
-    type: object
-    properties:
-      user: 
-        type: object
-        required:
-          - email
-          - token
-          - username
-          - bio
-          - image
-        properties:
-          email:
-            type: string
-          token:
-            type: string
-          username:
-            type: string
-          bio:
-            type: string
-          image:
-            type: string
-  ErrorResponse:
-    required:
-      - errors
-    type: object
-    properties:
-      errors:
-        required:
-          - body
-        type: object
-        properties:
-          body:
-            type: array
-            items:
-              type: string
+  /user:
+    get:
+      x-google-backend:
+        address: ${var.users_service_url}/user
+      summary: Get current user
+      description: Get current user
+      operationId: getCurrentUser
+      responses: 
+        200:
+          description: Created
+          schema:
+            $ref: '#/definitions/User'
+        422:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
 EOF
 }

@@ -1,3 +1,8 @@
+data "google_service_account_access_token" "repo" {
+  target_service_account = google_service_account.artifactregistry_writer.email
+  scopes                 = ["cloud-platform"]
+}
+
 provider "google" {
   project = local.project_id
   region  = local.region
@@ -6,6 +11,25 @@ provider "google" {
 provider "google-beta" {
   project = local.project_id
   region  = local.region
+}
+
+provider "docker" {
+  registry_auth {
+    address  = local.registry
+    username = "oauth2accesstoken"
+    password = data.google_service_account_access_token.repo.access_token
+  }
+}
+
+resource "google_service_account" "artifactregistry_writer" {
+  project = local.project_id
+  account_id   = "artifact-registry-writer"
+}
+
+resource "google_project_iam_member" "artifactregistry_writer" {
+  project = local.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.artifactregistry_writer.email}"
 }
 
 module "network" {
