@@ -25,6 +25,7 @@ definitions:
         properties:
           email:
             type: string
+            format: email
           token:
             type: string
           username:
@@ -33,6 +34,7 @@ definitions:
             type: string
           image:
             type: string
+            format: uri
   ErrorResponse:
     required:
       - errors
@@ -69,6 +71,7 @@ paths:
             properties:
               email:
                 type: string
+                format: email
               password: 
                 type: string
                 format: password
@@ -105,6 +108,7 @@ paths:
             properties:
               email:
                 type: string
+                format: email
               username:
                 type: string
               password: 
@@ -137,5 +141,45 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorResponse'
+    put:
+      x-google-backend:
+        address: ${var.users_service_url}/user
+      summary: Update current user
+      description: Updated user information for current user
+      operationId: updateCurrentUser
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          description: User details to update. At least **one** field is required.
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              username:
+                type: string
+              password: 
+                type: string
+                format: password
+              bio:
+                type: string
+              image: 
+                type: string
+                format: uri
+      responses: 
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+        401:
+          description: Unauthorized
+        422:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
 EOF
 }
