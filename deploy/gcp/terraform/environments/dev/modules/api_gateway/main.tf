@@ -1,31 +1,12 @@
-resource "google_project_service" "api_gateway" {
-  service            = "apigateway.googleapis.com"
-  disable_on_destroy = true
-}
-
-resource "google_project_service" "service_control" {
-  service            = "servicecontrol.googleapis.com"
-  disable_on_destroy = true
-}
-
-resource "google_project_service" "service_management" {
-  service            = "servicemanagement.googleapis.com"
-  disable_on_destroy = true
-}
-
 resource "google_api_gateway_api" "api" {
   provider = google-beta
-  api_id = var.api_id
-
-  depends_on = [
-    google_project_service.api_gateway
-  ]
+  api_id   = var.api_id
 }
 
 resource "random_string" "api_config_id" {
-  length           = 4
-  upper = false
-  special          = false
+  length  = 4
+  upper   = false
+  special = false
 
   keepers = {
     api_config_spec = local.api_config_spec
@@ -33,13 +14,13 @@ resource "random_string" "api_config_id" {
 }
 
 resource "google_api_gateway_api_config" "api_gateway" {
-  provider = google-beta
+  provider      = google-beta
   api           = google_api_gateway_api.api.api_id
   api_config_id = "${google_api_gateway_api.api.api_id}-config-${random_string.api_config_id.result}"
 
   openapi_documents {
     document {
-      path = "realworld-example-app-spec.yaml"
+      path     = "realworld-example-app-spec.yaml"
       contents = base64encode(local.api_config_spec)
     }
   }
@@ -50,7 +31,7 @@ resource "google_api_gateway_api_config" "api_gateway" {
 }
 
 resource "google_api_gateway_gateway" "api_gateway" {
-  provider = google-beta
+  provider   = google-beta
   api_config = google_api_gateway_api_config.api_gateway.id
   gateway_id = "${var.api_id}-api-gateway"
 }

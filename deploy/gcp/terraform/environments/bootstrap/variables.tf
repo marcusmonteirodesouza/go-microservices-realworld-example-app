@@ -18,7 +18,7 @@ variable "project_id" {
   description = "The project ID."
 }
 
-variable "tfstate_bucket_location" {
+variable "region" {
   type        = string
-  description = "The GCS location of the terraform state bucket."
+  description = "The default GCP region for the created resources."
 }
