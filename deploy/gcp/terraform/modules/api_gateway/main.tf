@@ -1,6 +1,15 @@
+resource "google_project_service" "apigateway" {
+  service            = "apigateway.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_api_gateway_api" "api" {
   provider = google-beta
   api_id   = var.api_id
+
+  depends_on = [
+    google_project_service.apigateway
+  ]
 }
 
 resource "random_string" "api_config_id" {
@@ -28,6 +37,10 @@ resource "google_api_gateway_api_config" "api_gateway" {
   lifecycle {
     create_before_destroy = true
   }
+
+  depends_on = [
+    google_project_service.apigateway
+  ]
 }
 
 resource "google_api_gateway_gateway" "api_gateway" {

@@ -9,12 +9,21 @@ resource "random_password" "users_service_jwt_secret_key" {
   length = 64
 }
 
+resource "google_project_service" "secretmanager" {
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_secret_manager_secret" "users_service_jwt_secret_key" {
   secret_id = "users-service-jwt-key"
 
   replication {
     automatic = true
   }
+
+  depends_on = [
+    google_project_service.secretmanager
+  ]
 }
 
 resource "google_secret_manager_secret_version" "users_service_jwt_secret_key" {
@@ -29,9 +38,14 @@ resource "google_secret_manager_secret_iam_member" "secret_access" {
   member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
+resource "google_project_service" "run" {
+  service            = "run.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_cloud_run_service" "users_service" {
   name     = "users-service"
-  location = var.region
+  location = var.location
 
   template {
     spec {
@@ -39,7 +53,7 @@ resource "google_cloud_run_service" "users_service" {
         image = "${var.image}@${data.docker_registry_image.users_service.sha256_digest}"
         env {
           name  = "FIRESTORE_PROJECT_ID"
-          value = var.project_id
+          value = data.google_project.project.project_id
         }
         env {
           name = "JWT_SECRET_KEY"
@@ -59,6 +73,7 @@ resource "google_cloud_run_service" "users_service" {
   }
 
   depends_on = [
+    google_project_service.run,
     google_secret_manager_secret_iam_member.secret_access,
   ]
 }

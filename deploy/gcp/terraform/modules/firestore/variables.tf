@@ -5,5 +5,5 @@ variable "project_id" {
 
 variable "location_id" {
   type        = string
-  description = "The firestore location."
+  description = "The Firestore location ID."
 }

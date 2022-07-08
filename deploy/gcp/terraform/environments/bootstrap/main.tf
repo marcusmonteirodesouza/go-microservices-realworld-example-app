@@ -6,16 +6,13 @@ resource "google_project" "realworld_example" {
   auto_create_network = false
 }
 
-# serviceusage is used when enabling the other APIs
-resource "google_project_service" "serviceusage" {
-  project = google_project.realworld_example.project_id
-  service = "serviceusage.googleapis.com"
+# Terraform state bucket
+resource "random_pet" "tfstate_bucket" {
 }
 
-# Terraform state bucket
 resource "google_storage_bucket" "tfstate" {
   project  = google_project.realworld_example.project_id
-  name     = "tfstate-${var.project_id}-${var.environment}"
+  name     = random_pet.tfstate_bucket.id
   location = var.region
 
   uniform_bucket_level_access = true
@@ -23,6 +20,21 @@ resource "google_storage_bucket" "tfstate" {
   versioning {
     enabled = true
   }
+}
+
+# serviceusage is used when enabling the other APIs
+resource "google_project_service" "serviceusage" {
+  project            = google_project.realworld_example.project_id
+  service            = "serviceusage.googleapis.com"
+  disable_on_destroy = false
+}
+
+# Because only Owner can create App Engine applications https://cloud.google.com/appengine/docs/standard/python/roles#primitive_roles
+module "firestore" {
+  source = "../../modules/firestore"
+
+  project_id  = google_project.realworld_example.project_id
+  location_id = var.firestore_location_id
 }
 
 # Artifact registry repositories for the services hosted by this project
@@ -47,10 +59,15 @@ resource "google_artifact_registry_repository" "users_service" {
 }
 
 # Creates the Github Deployer Service Account and setups Workload Identity
-# TODO(Marcus): Replace these wide roles by a custom role with only the necessary permissions.
 resource "google_service_account" "github_deployer" {
   project    = google_project.realworld_example.project_id
   account_id = "github-deployer"
+}
+
+resource "google_project_service" "cloudbuild" {
+  project            = google_project.realworld_example.project_id
+  service            = "cloudbuild.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_project_iam_member" "github_deployer_apigateway_admin" {
@@ -59,33 +76,15 @@ resource "google_project_iam_member" "github_deployer_apigateway_admin" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
-resource "google_project_iam_member" "github_deployer_appengine_admin" {
+resource "google_project_iam_member" "github_deployer_cloudbuild_builder" {
   project = google_project.realworld_example.project_id
-  role    = "roles/appengine.appAdmin"
+  role    = "roles/cloudbuild.builds.builder"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
-resource "google_project_iam_member" "github_deployer_cloudbuild_service_agent" {
+resource "google_project_iam_member" "github_deployer_quota_admin" {
   project = google_project.realworld_example.project_id
-  role    = "roles/cloudbuild.serviceAgent"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
-resource "google_project_iam_member" "github_deployer_service_account_admin" {
-  project = google_project.realworld_example.project_id
-  role    = "roles/iam.serviceAccountAdmin"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
-resource "google_project_iam_member" "github_deployer_workload_identity_pool_admin" {
-  project = google_project.realworld_example.project_id
-  role    = "roles/iam.workloadIdentityPoolAdmin"
-  member  = "serviceAccount:${google_service_account.github_deployer.email}"
-}
-
-resource "google_project_iam_member" "github_deployer_project_iam_admin" {
-  project = google_project.realworld_example.project_id
-  role    = "roles/resourcemanager.projectIamAdmin"
+  role    = "roles/servicemanagement.quotaAdmin"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
@@ -95,16 +94,47 @@ resource "google_project_iam_member" "github_deployer_run_admin" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
+# TODO: Create a custom role with only create and delete secrets permissions.
 resource "google_project_iam_member" "github_deployer_secretmanager_admin" {
   project = google_project.realworld_example.project_id
   role    = "roles/secretmanager.admin"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
-resource "google_project_iam_member" "github_deployer_quota_admin" {
+resource "google_project_iam_member" "github_deployer_service_account_user" {
   project = google_project.realworld_example.project_id
-  role    = "roles/servicemanagement.quotaAdmin"
+  role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_project_iam_member" "github_deployer_service_usage_admin" {
+  project = google_project.realworld_example.project_id
+  role    = "roles/serviceusage.serviceUsageAdmin"
+  member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_project_service" "iam" {
+  project            = google_project.realworld_example.project_id
+  service            = "iam.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "cloudresourcemanager" {
+  project            = google_project.realworld_example.project_id
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "iamcredentials" {
+  project            = google_project.realworld_example.project_id
+  service            = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "sts" {
+  project            = google_project.realworld_example.project_id
+  service            = "sts.googleapis.com"
+  disable_on_destroy = false
 }
 
 module "github_oidc" {
@@ -120,7 +150,9 @@ module "github_oidc" {
   }
 
   depends_on = [
-    google_project_iam_member.github_deployer_workload_identity_pool_admin,
-    google_project_iam_member.github_deployer_service_account_admin
+    google_project_service.iam,
+    google_project_service.cloudresourcemanager,
+    google_project_service.iamcredentials,
+    google_project_service.sts
   ]
 }
