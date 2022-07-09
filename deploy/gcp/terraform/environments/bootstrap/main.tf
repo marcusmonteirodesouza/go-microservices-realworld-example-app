@@ -58,6 +58,20 @@ resource "google_artifact_registry_repository" "users_service" {
   ]
 }
 
+resource "google_artifact_registry_repository" "profles_service" {
+  provider = google-beta
+
+  project       = google_project.realworld_example.project_id
+  location      = var.region
+  repository_id = "profiles-service-repository"
+  description   = "Profiles Service Repository"
+  format        = "DOCKER"
+
+  depends_on = [
+    google_project_service.artifactregistry
+  ]
+}
+
 # Creates the Github Deployer Service Account and setups Workload Identity
 resource "google_service_account" "github_deployer" {
   project    = google_project.realworld_example.project_id
