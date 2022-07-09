@@ -10,5 +10,10 @@ variable "api_description" {
 
 variable "users_service_url" {
   type        = string
-  description = "Users Service URL."
+  description = "The Users Service URL."
+}
+
+variable "profiles_service_url" {
+  type        = string
+  description = "The Profiles Service URL."
 }
