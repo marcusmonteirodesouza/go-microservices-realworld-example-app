@@ -3,6 +3,16 @@ resource "google_project_service" "apigateway" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "servicecontrol" {
+  service            = "servicecontrol.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "servicemanagement" {
+  service            = "servicemanagement.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_api_gateway_api" "api" {
   provider = google-beta
   api_id   = var.api_id
