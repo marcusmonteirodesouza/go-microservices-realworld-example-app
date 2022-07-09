@@ -27,10 +27,20 @@ module "users_service" {
   image    = var.users_service_image
 }
 
+module "profiles_service" {
+  source = "../../modules/profiles_service"
+
+
+  location               = var.region
+  image                  = var.profiles_service_image
+  users_service_base_url = module.users_service.url
+}
+
 module "api_gateway" {
   source = "../../modules/api_gateway"
 
-  api_id            = local.api_id
-  api_description   = local.api_description
-  users_service_url = module.users_service.url
+  api_id               = local.api_id
+  api_description      = local.api_description
+  users_service_url    = module.users_service.url
+  profiles_service_url = module.profiles_service.url
 }

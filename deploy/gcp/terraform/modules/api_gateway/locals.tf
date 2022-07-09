@@ -35,6 +35,26 @@ definitions:
           image:
             type: string
             format: uri
+  Profile:
+    type: object
+    properties:
+      profile: 
+        type: object
+        required:
+          - username
+          - bio
+          - image
+          - following
+        properties:
+          username:
+            type: string
+          bio:
+            type: string
+          image:
+            type: string
+            format: uri
+          following:
+            type: boolean
   ErrorResponse:
     required:
       - errors
@@ -134,7 +154,7 @@ paths:
       operationId: getCurrentUser
       responses: 
         200:
-          description: Created
+          description: OK
           schema:
             $ref: '#/definitions/User'
         422:
@@ -180,6 +200,79 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorResponse'
-
+  /profiles/{username}:
+    get:
+      x-google-backend:
+        address: ${var.profiles_service_url}/profiles/{username}
+      summary: Get a profile
+      description: Get a profile of a user of the system. Auth is optional
+      operationId: getProfileByUsername
+      parameters:
+        - name: username
+          in: path
+          description: Username of the profile to get
+          required: true
+          schema:
+            type: string
+      responses: 
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Profile'
+        401:
+          description: Unauthorized    
+        422:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /profiles/{username}/follow:
+    post:
+      x-google-backend:
+        address: ${var.profiles_service_url}/profiles/{username}/follow
+      summary: Follow a user
+      description: Follow a user by username
+      operationId: followUserByUsername
+      parameters:
+        - name: username
+          in: path
+          description: Username of the profile you want to follow
+          required: true
+          schema:
+            type: string
+      responses: 
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Profile'
+        401:
+          description: Unauthorized    
+        422:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      x-google-backend:
+        address: ${var.profiles_service_url}/profiles/{username}/follow
+      summary: Unfollow a user
+      description: Unfollow a user by username
+      operationId: unfollowUserByUsername
+      parameters:
+        - name: username
+          in: path
+          description: Username of the profile you want to unfollow
+          required: true
+          schema:
+            type: string
+      responses: 
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Profile'
+        401:
+          description: Unauthorized    
+        422:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
 EOF
 }
