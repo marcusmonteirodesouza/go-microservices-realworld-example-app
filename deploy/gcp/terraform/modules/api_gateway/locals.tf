@@ -5,7 +5,6 @@ info:
   title: ${google_api_gateway_api.api.api_id}
   description: ${var.api_description}
   version: 1.0.0
-basePath: /api
 schemes:
   - https
 produces:
@@ -94,7 +93,8 @@ paths:
   /users/login:
     post:
       x-google-backend:
-        address: ${var.users_service_url}/users/login
+        address: ${var.users_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Existing user login
       description: Login for existing user
       operationId: login
@@ -130,7 +130,8 @@ paths:
   /users:
     post:
       x-google-backend:
-        address: ${var.users_service_url}/users
+        address: ${var.users_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Register a new user
       description: Register a new user
       operationId: registerUser
@@ -169,7 +170,8 @@ paths:
   /user:
     get:
       x-google-backend:
-        address: ${var.users_service_url}/user
+        address: ${var.users_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Get current user
       description: Get current user
       operationId: getCurrentUser
@@ -184,7 +186,8 @@ paths:
             $ref: '#/definitions/ErrorResponse'
     put:
       x-google-backend:
-        address: ${var.users_service_url}/user
+        address: ${var.users_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Update current user
       description: Updated user information for current user
       operationId: updateCurrentUser
@@ -224,7 +227,8 @@ paths:
   /users/{username}:
     get:
       x-google-backend:
-        address: ${var.users_service_url}/users/{username}
+        address: ${var.users_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Get user by username
       description: Get user by username
       operationId: getUserByUsername
@@ -244,7 +248,8 @@ paths:
   /profiles/{username}:
     get:
       x-google-backend:
-        address: ${var.profiles_service_url}/profiles/{username}
+        address: ${var.profiles_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Get a profile
       description: Get a profile of a user of the system. Auth is optional
       operationId: getProfileByUsername
@@ -268,7 +273,8 @@ paths:
   /profiles/{username}/follow:
     post:
       x-google-backend:
-        address: ${var.profiles_service_url}/profiles/{username}/follow
+        address: ${var.profiles_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Follow a user
       description: Follow a user by username
       operationId: followUserByUsername
@@ -291,7 +297,8 @@ paths:
             $ref: '#/definitions/ErrorResponse'
     delete:
       x-google-backend:
-        address: ${var.profiles_service_url}/profiles/{username}/follow
+        address: ${var.profiles_service_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       summary: Unfollow a user
       description: Unfollow a user by username
       operationId: unfollowUserByUsername
