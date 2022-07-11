@@ -72,6 +72,12 @@ resource "google_cloud_run_service" "users_service" {
     }
   }
 
+  metadata {
+    annotations = {
+      "run.googleapis.com/ingress" = "all"
+    }
+  }
+
   depends_on = [
     google_project_service.run,
     google_secret_manager_secret_iam_member.secret_access,

@@ -30,6 +30,12 @@ resource "google_cloud_run_service" "profiles_service" {
     }
   }
 
+  metadata {
+    annotations = {
+      "run.googleapis.com/ingress" = "all"
+    }
+  }
+
   depends_on = [
     google_project_service.run,
   ]
