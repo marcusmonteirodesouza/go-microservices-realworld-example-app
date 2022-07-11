@@ -35,6 +35,27 @@ definitions:
           image:
             type: string
             format: uri
+  UserWithoutToken:
+    type: object
+    properties:
+      user: 
+        type: object
+        required:
+          - email
+          - username
+          - bio
+          - image
+        properties:
+          email:
+            type: string
+            format: email
+          username:
+            type: string
+          bio:
+            type: string
+          image:
+            type: string
+            format: uri
   Profile:
     type: object
     properties:
@@ -200,6 +221,26 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/ErrorResponse'
+  /users/{username}:
+    get:
+      x-google-backend:
+        address: ${var.users_service_url}/users/{username}
+      summary: Get user by username
+      description: Get user by username
+      operationId: getUserByUsername
+      parameters:
+        - name: username
+          in: path
+          description: Username of the user to get
+          type: string
+          required: true
+      responses: 
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserWithoutToken'
+        404:
+          description: Not Found
   /profiles/{username}:
     get:
       x-google-backend:
