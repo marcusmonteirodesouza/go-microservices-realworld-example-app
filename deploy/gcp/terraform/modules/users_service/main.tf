@@ -74,7 +74,7 @@ resource "google_cloud_run_service" "users_service" {
 
   metadata {
     annotations = {
-      "run.googleapis.com/ingress" = "all"
+      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
     }
   }
 
@@ -82,4 +82,11 @@ resource "google_cloud_run_service" "users_service" {
     google_project_service.run,
     google_secret_manager_secret_iam_member.secret_access,
   ]
+}
+
+module "external_http_lb" {
+  source = "../../modules/cloud_run_external_http_lb"
+
+  network           = var.network
+  cloud_run_service = google_cloud_run_service.users_service.name
 }

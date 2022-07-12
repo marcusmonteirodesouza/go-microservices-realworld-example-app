@@ -13,6 +13,16 @@ variable "artifact_registry_location" {
   description = "The Artifact Registry location."
 }
 
+variable "lb_ip_cidr_range" {
+  type        = string
+  description = "The IP CIDR range reserved for HTTP(S) Load Balancers."
+}
+
+variable "proxy_only_ip_cidr_range" {
+  type        = string
+  description = "The IP CIDR range reserved for Regional Managed Proxies."
+}
+
 variable "users_service_image" {
   type        = string
   description = "The Artifact Registry Users Service Docker image."

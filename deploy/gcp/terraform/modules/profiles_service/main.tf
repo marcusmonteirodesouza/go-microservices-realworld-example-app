@@ -32,11 +32,18 @@ resource "google_cloud_run_service" "profiles_service" {
 
   metadata {
     annotations = {
-      "run.googleapis.com/ingress" = "all"
+      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
     }
   }
 
   depends_on = [
     google_project_service.run,
   ]
+}
+
+module "external_http_lb" {
+  source = "../../modules/cloud_run_external_http_lb"
+
+  network           = var.network
+  cloud_run_service = google_cloud_run_service.profiles_service.name
 }

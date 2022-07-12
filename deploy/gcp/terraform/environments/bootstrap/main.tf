@@ -96,6 +96,18 @@ resource "google_project_iam_member" "github_deployer_cloudbuild_builder" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
+resource "google_project_iam_member" "github_deployer_compute_instance_admin" {
+  project = google_project.realworld_example.project_id
+  role    = "roles/compute.instanceAdmin"
+  member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_project_iam_member" "github_deployer_network_admin" {
+  project = google_project.realworld_example.project_id
+  role    = "roles/compute.networkAdmin"
+  member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
 resource "google_project_iam_member" "github_deployer_quota_admin" {
   project = google_project.realworld_example.project_id
   role    = "roles/servicemanagement.quotaAdmin"
@@ -105,6 +117,12 @@ resource "google_project_iam_member" "github_deployer_quota_admin" {
 resource "google_project_iam_member" "github_deployer_run_admin" {
   project = google_project.realworld_example.project_id
   role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_project_iam_member" "github_deployer_security_admin" {
+  project = google_project.realworld_example.project_id
+  role    = "roles/compute.securityAdmin"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
