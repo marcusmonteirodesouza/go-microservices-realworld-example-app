@@ -42,3 +42,10 @@ module "api_gateway" {
   users_service_url    = module.users_service.url
   profiles_service_url = module.profiles_service.url
 }
+
+module "api_gateway_external_http_lb" {
+  source = "../../modules/api_gateway_external_http_lb"
+
+  api_gateway_id = module.api_gateway.id
+  region         = data.google_client_config.deployer.region
+}
