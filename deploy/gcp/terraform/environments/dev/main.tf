@@ -19,19 +19,11 @@ provider "docker" {
   }
 }
 
-module "network" {
-  source = "../../modules/network"
-
-  lb_ip_cidr_range         = var.lb_ip_cidr_range
-  proxy_only_ip_cidr_range = var.proxy_only_ip_cidr_range
-}
-
 module "users_service" {
   source = "../../modules/users_service"
 
   location = var.region
   image    = var.users_service_image
-  network  = module.network.name
 }
 
 module "profiles_service" {
@@ -40,7 +32,6 @@ module "profiles_service" {
   location               = var.region
   image                  = var.profiles_service_image
   users_service_base_url = module.users_service.url
-  network                = module.network.name
 }
 
 module "api_gateway" {

@@ -12,8 +12,3 @@ variable "jwt_seconds_to_expire" {
   default     = 86400
   description = "The number of seconds a created JWT is valid for."
 }
-
-variable "network" {
-  type        = string
-  description = "The network in which resources will be created in."
-}

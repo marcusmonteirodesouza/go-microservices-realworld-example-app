@@ -12,8 +12,3 @@ variable "users_service_base_url" {
   type        = string
   description = "The Users Service base URL."
 }
-
-variable "network" {
-  type        = string
-  description = "The network in which resources will be created in."
-}

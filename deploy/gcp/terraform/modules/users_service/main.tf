@@ -74,7 +74,7 @@ resource "google_cloud_run_service" "users_service" {
 
   metadata {
     annotations = {
-      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
+      "run.googleapis.com/ingress" = "all"
     }
   }
 
@@ -84,9 +84,9 @@ resource "google_cloud_run_service" "users_service" {
   ]
 }
 
-module "external_http_lb" {
-  source = "../../modules/cloud_run_external_http_lb"
-
-  network           = var.network
-  cloud_run_service = google_cloud_run_service.users_service.name
+resource "google_cloud_run_service_iam_member" "run_allow_unauthenticated" {
+  location = google_cloud_run_service.users_service.location
+  service  = google_cloud_run_service.users_service.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
