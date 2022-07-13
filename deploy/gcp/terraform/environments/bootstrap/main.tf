@@ -29,6 +29,13 @@ resource "google_project_service" "serviceusage" {
   disable_on_destroy = false
 }
 
+# To enable the repository dispatch Cloud Function to be deployed
+resource "google_project_service" "cloudfunctions" {
+  project            = google_project.realworld_example.project_id
+  service            = "cloudfunctions.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Because only Owner can create App Engine applications https://cloud.google.com/appengine/docs/standard/python/roles#primitive_roles
 module "firestore" {
   source = "../../modules/firestore"
