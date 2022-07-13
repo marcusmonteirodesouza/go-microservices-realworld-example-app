@@ -65,7 +65,7 @@ resource "google_artifact_registry_repository" "users_service" {
   ]
 }
 
-resource "google_artifact_registry_repository" "profles_service" {
+resource "google_artifact_registry_repository" "profiles_service" {
   provider = google-beta
 
   project       = google_project.realworld_example.project_id
@@ -77,6 +77,12 @@ resource "google_artifact_registry_repository" "profles_service" {
   depends_on = [
     google_project_service.artifactregistry
   ]
+}
+
+# Used for triggering Cloud Functions which trigger Github Workflows. See https://cloud.google.com/artifact-registry/docs/configure-notifications
+resource "google_pubsub_topic" "gcr" {
+  project = google_project.realworld_example.project_id
+  name    = "gcr"
 }
 
 # Creates the Github Deployer Service Account and setups Workload Identity
@@ -194,4 +200,30 @@ module "github_oidc" {
     google_project_service.iamcredentials,
     google_project_service.sts
   ]
+}
+
+# RepositoryDispatch Github Personal Access Token. See https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event
+resource "google_project_service" "secretmanager" {
+  project            = google_project.realworld_example.project_id
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_secret_manager_secret" "github_repository_dispatch_personal_access_token" {
+  project   = google_project.realworld_example.project_id
+  secret_id = "github-repository-dispatch-personal-access-token"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [
+    google_project_service.secretmanager
+  ]
+}
+
+resource "google_secret_manager_secret_version" "github_repository_dispatch_personal_access_token" {
+  secret = google_secret_manager_secret.github_repository_dispatch_personal_access_token.id
+
+  secret_data = var.github_repository_dispatch_personal_access_token
 }

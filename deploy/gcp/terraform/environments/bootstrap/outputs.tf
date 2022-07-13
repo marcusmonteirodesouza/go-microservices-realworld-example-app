@@ -11,3 +11,8 @@ output "github_oidc_provider" {
   description = "Workload Identity Provider name."
   value       = module.github_oidc.provider_name
 }
+
+output "github_repository_dispatch_personal_access_token_secret_name" {
+  description = "The name of the Github Personal Access Token secret."
+  value       = google_secret_manager_secret.github_repository_dispatch_personal_access_token.name
+}
