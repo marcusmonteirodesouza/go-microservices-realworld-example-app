@@ -132,6 +132,7 @@ paths:
       x-google-backend:
         address: ${var.users_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Register a new user
       description: Register a new user
       operationId: registerUser
@@ -172,6 +173,7 @@ paths:
       x-google-backend:
         address: ${var.users_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Get current user
       description: Get current user
       operationId: getCurrentUser
@@ -188,6 +190,7 @@ paths:
       x-google-backend:
         address: ${var.users_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Update current user
       description: Updated user information for current user
       operationId: updateCurrentUser
@@ -229,6 +232,7 @@ paths:
       x-google-backend:
         address: ${var.users_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Get user by username
       description: Get user by username
       operationId: getUserByUsername
@@ -250,6 +254,7 @@ paths:
       x-google-backend:
         address: ${var.profiles_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Get a profile
       description: Get a profile of a user of the system. Auth is optional
       operationId: getProfileByUsername
@@ -275,6 +280,7 @@ paths:
       x-google-backend:
         address: ${var.profiles_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Follow a user
       description: Follow a user by username
       operationId: followUserByUsername
@@ -299,6 +305,7 @@ paths:
       x-google-backend:
         address: ${var.profiles_service_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        disable_auth: True
       summary: Unfollow a user
       description: Unfollow a user by username
       operationId: unfollowUserByUsername
