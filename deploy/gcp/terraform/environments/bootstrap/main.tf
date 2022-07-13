@@ -29,6 +29,13 @@ resource "google_project_service" "serviceusage" {
   disable_on_destroy = false
 }
 
+# To enable the repository dispatch Cloud Function to be deployed
+resource "google_project_service" "cloudfunctions" {
+  project            = google_project.realworld_example.project_id
+  service            = "cloudfunctions.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Because only Owner can create App Engine applications https://cloud.google.com/appengine/docs/standard/python/roles#primitive_roles
 module "firestore" {
   source = "../../modules/firestore"
@@ -58,7 +65,7 @@ resource "google_artifact_registry_repository" "users_service" {
   ]
 }
 
-resource "google_artifact_registry_repository" "profles_service" {
+resource "google_artifact_registry_repository" "profiles_service" {
   provider = google-beta
 
   project       = google_project.realworld_example.project_id
@@ -70,6 +77,12 @@ resource "google_artifact_registry_repository" "profles_service" {
   depends_on = [
     google_project_service.artifactregistry
   ]
+}
+
+# Used for triggering Cloud Functions which trigger Github Workflows. See https://cloud.google.com/artifact-registry/docs/configure-notifications
+resource "google_pubsub_topic" "gcr" {
+  project = google_project.realworld_example.project_id
+  name    = "gcr"
 }
 
 # Creates the Github Deployer Service Account and setups Workload Identity
@@ -93,6 +106,12 @@ resource "google_project_iam_member" "github_deployer_apigateway_admin" {
 resource "google_project_iam_member" "github_deployer_cloudbuild_builder" {
   project = google_project.realworld_example.project_id
   role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${google_service_account.github_deployer.email}"
+}
+
+resource "google_project_iam_member" "github_deployer_cloudfunctions_developer" {
+  project = google_project.realworld_example.project_id
+  role    = "roles/cloudfunctions.developer"
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
@@ -187,4 +206,41 @@ module "github_oidc" {
     google_project_service.iamcredentials,
     google_project_service.sts
   ]
+}
+
+# RepositoryDispatch Github Personal Access Token. See https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event
+resource "google_service_account" "github_repository_dispatch" {
+  project    = google_project.realworld_example.project_id
+  account_id = "github-repository-dispatch-sa"
+}
+
+resource "google_project_service" "secretmanager" {
+  project            = google_project.realworld_example.project_id
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_secret_manager_secret" "github_repository_dispatch_personal_access_token" {
+  project   = google_project.realworld_example.project_id
+  secret_id = "github-repository-dispatch-personal-access-token"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [
+    google_project_service.secretmanager
+  ]
+}
+
+resource "google_secret_manager_secret_version" "github_repository_dispatch_personal_access_token" {
+  secret = google_secret_manager_secret.github_repository_dispatch_personal_access_token.id
+
+  secret_data = var.github_repository_dispatch_personal_access_token
+}
+
+resource "google_secret_manager_secret_iam_member" "github_repository_dispatch_personal_access_token_secret_access" {
+  secret_id = google_secret_manager_secret.github_repository_dispatch_personal_access_token.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.github_repository_dispatch.email}"
 }

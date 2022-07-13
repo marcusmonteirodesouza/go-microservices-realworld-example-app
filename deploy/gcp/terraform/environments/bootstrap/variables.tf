@@ -22,3 +22,9 @@ variable "firestore_location_id" {
   type        = string
   description = "The Firestore location ID."
 }
+
+variable "github_repository_dispatch_personal_access_token" {
+  type        = string
+  description = "Github Personal Access Token with repo scope for triggering deployment workflows."
+  sensitive   = true
+}

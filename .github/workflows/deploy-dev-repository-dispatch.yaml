@@ -1,0 +1,32 @@
+name: 'Deploy RepositoryDispatch Cloud Function to GCP - DEV'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    env:
+      REGION: us-central1
+      EVENT_TYPE: dev-service-updated
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: ${{ secrets.GCP_DEV_PROVIDER_NAME }}
+          service_account: ${{ secrets.GCP_DEV_SA_EMAIL }}
+      - uses: google-github-actions/deploy-cloud-functions@v0
+        with:
+          name: RepositoryDispatch
+          runtime: go116
+          region: ${{ env.REGION }}
+          env_vars: REPO=${{ github.repository }},EVENT_TYPE=${{ env.EVENT_TYPE }}
+          secret_environment_variables: GITHUB_TOKEN=${{ secrets.GCP_DEV_GITHUB_PERSONAL_ACCESS_TOKEN_SECRET_NAME }}
+          service_account_email: ${{ secrets.GCP_DEV_REPOSITORY_DISPATCH_SA }}
+          source_dir: ./go-microservices-realworld-example-app-repository-dispatch
+          event_trigger_type: google.pubsub.topic.publish
+          event_trigger_resource: ${{ secrets.GCP_DEV_GCR_PUBSUB_TOPIC }}
+          timeout: 300
