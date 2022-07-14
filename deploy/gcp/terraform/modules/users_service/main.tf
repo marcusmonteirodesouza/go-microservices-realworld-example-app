@@ -55,6 +55,7 @@ resource "google_cloud_run_service" "users_service" {
           name  = "FIRESTORE_PROJECT_ID"
           value = data.google_project.project.project_id
         }
+        # TODO(Marcus): Handle Authentication in the API Gateway? See https://cloud.google.com/api-gateway/docs/authenticating-users-jwt
         env {
           name = "JWT_SECRET_KEY"
           value_from {
